@@ -26,5 +26,5 @@ The main table and task-specific interventions use distinct evaluation protocols
 identified beside the corresponding visualizations. Baseline scores are quoted
 by the manuscript from [RoboMME](https://arxiv.org/abs/2603.04639).
 
-GitHub Pages serves this repository's `main` branch. Text uses DM Sans and Manrope
+GitHub Pages serves this repository's `main` branch. Text uses Google Sans and Noto Sans
 from Google Fonts, with system-font fallbacks.
