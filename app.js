@@ -30,3 +30,7 @@ function drawPaths(){const svg=$('#flow-lines'),r=$('.flow').getBoundingClientRe
 new ResizeObserver(drawPaths).observe($('.flow'));
 setStep(0);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setPlaying(true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPlaying(false)});
+
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.querySelectorAll(".storyboard video").forEach(video => { video.autoplay = false; video.pause(); });
+}

@@ -28,3 +28,8 @@ by the manuscript from [RoboMME](https://arxiv.org/abs/2603.04639).
 
 GitHub Pages serves this repository's `main` branch. Text uses Google Sans and Noto Sans
 from Google Fonts, with system-font fallbacks.
+
+The three task demonstration videos are embedded from the RoboMME project site
+(VideoUnmask, PickXtimes, and PatternLock, whose source asset is DrawPattern.mp4).
+They illustrate the benchmark tasks and are not T2MEM policy evaluation rollouts.
+Playback requires network access to robomme.github.io.
