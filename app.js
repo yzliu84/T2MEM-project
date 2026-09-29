@@ -13,7 +13,7 @@ function setStep(n){if(n===3&&currentStep!==3)updates++;currentStep=n;const s=st
 function tick(t){if(!playing)return;if(!phaseStart)phaseStart=t;const elapsed=t-phaseStart;$('#flow-progress').style.width=Math.min(elapsed/2600,1)*100+'%';if(elapsed>=2600){phaseStart=t;if(currentStep===3)cycle++;setStep((currentStep+1)%4)}frame=requestAnimationFrame(tick)}
 function setPlaying(value){playing=value;$('#play-flow').textContent=playing?'Ⅱ Pause':'▶ Play flow';$('#play-flow').setAttribute('aria-pressed',String(playing));$('.flow').classList.toggle('playing',playing);cancelAnimationFrame(frame);phaseStart=0;if(playing)frame=requestAnimationFrame(tick)}
 $$('[data-step]').forEach(b=>b.addEventListener('click',()=>{setPlaying(false);setStep(+b.dataset.step)}));$('#next-step').addEventListener('click',()=>{setPlaying(false);if(currentStep===3)cycle++;setStep((currentStep+1)%4)});$('#play-flow').addEventListener('click',()=>setPlaying(!playing));$('#reset-flow').addEventListener('click',()=>{setPlaying(false);cycle=0;updates=0;setStep(0);$('#flow-progress').style.width='0%'});
-const phaseData=[['Trainable','Inactive','Establish task-specific action skills.','Adapt the pretrained policy without memory. This supplies a capable visuomotor starting point before learning the memory pathway.'],['Frozen','Trainable','Teach memory what future actions need.','Hold policy slow parameters fixed. Action supervision passes through the action expert to shape memory extraction, retrieval and earlier fast-weight writes.'],['Trainable','Frozen','Teach the policy to use its memory.','Hold memory slow parameters fixed. Adapt the policy to the historical context it receives, while episode-local fast weights keep updating from observations.']];
+const phaseData=[['Trainable','Not present','Establish task-specific action skills.','Adapt the pretrained policy without memory. This supplies a capable visuomotor starting point before learning the memory pathway.'],['Frozen','Trainable','Teach memory what future actions need.','Hold policy slow parameters fixed. Action supervision passes through the action expert to shape memory extraction, retrieval and earlier fast-weight writes.'],['Trainable','Frozen','Teach the policy to use its memory.','Hold memory slow parameters fixed. Adapt the policy to the historical context it receives, while episode-local fast weights keep updating from observations.']];
 let trainingPhase=0, trainingPlaying=false, trainingFrame=0, trainingStart=0;
 function phase(n){
  trainingPhase=n;const d=phaseData[n];
@@ -21,14 +21,17 @@ function phase(n){
  $('#phase-title').textContent=d[2];$('#phase-copy').textContent=d[3];
  $$('[data-phase]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.phase===n)));
  $('.training').dataset.phase=String(n);
- $('#training-phase-label').textContent=['Stage 1 · Policy adaptation','Stage 2A · Memory learning','Stage 2B · Policy learning'][n];
+ $('#training-phase-label').textContent=['Stage 1 · No memory','Stage 2A · Memory learning','Stage 2B · Policy learning'][n];
  $('#gradient-caption').textContent=n===1?'Action gradients pass through the fixed policy to train memory':'Action supervision trains policy slow parameters';
  $('#training-gradient-path').setAttribute('d',n===1?'M500 30 V10 H100 V30':'M500 30 V10 H300 V30');
  $('#training-memory').classList.toggle('is-learning',n===1);
  $('#training-policy').classList.toggle('is-learning',n!==1);
- $('#training-memory').classList.toggle('is-inactive',n===0);
+ $('#training-memory').classList.toggle('is-absent',n===0);
+ $('#training-memory > span').textContent=n===0?'No memory':'Memory';
+ $('#training-memory > small').textContent=n===0?'Introduced in Stage 2':'Slow parameters';
+ $('.training-key').textContent=n===0?'Blue: policy learning · No memory module or fast weights':'Blue: slow-parameter learning · Orange: episode-local fast-weight updates';
  $('#training-episode').classList.toggle('is-updating',n!==0);
- $('#episode-label').textContent=n===0?'Fast memory inactive':'Fast weights keep updating within each episode';
+ $('#episode-label').textContent=n===0?'No memory reads, writes or fast-weight updates':'Fast weights keep updating within each episode';
 }
 function trainingTick(t){
  if(!trainingPlaying)return;
