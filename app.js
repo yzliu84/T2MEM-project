@@ -14,7 +14,51 @@ function tick(t){if(!playing)return;if(!phaseStart)phaseStart=t;const elapsed=t-
 function setPlaying(value){playing=value;$('#play-flow').textContent=playing?'Ⅱ Pause':'▶ Play flow';$('#play-flow').setAttribute('aria-pressed',String(playing));$('.flow').classList.toggle('playing',playing);cancelAnimationFrame(frame);phaseStart=0;if(playing)frame=requestAnimationFrame(tick)}
 $$('[data-step]').forEach(b=>b.addEventListener('click',()=>{setPlaying(false);setStep(+b.dataset.step)}));$('#next-step').addEventListener('click',()=>{setPlaying(false);if(currentStep===3)cycle++;setStep((currentStep+1)%4)});$('#play-flow').addEventListener('click',()=>setPlaying(!playing));$('#reset-flow').addEventListener('click',()=>{setPlaying(false);cycle=0;updates=0;setStep(0);$('#flow-progress').style.width='0%'});
 const phaseData=[['Trainable','Inactive','Establish task-specific action skills.','Adapt the pretrained policy without memory. This supplies a capable visuomotor starting point before learning the memory pathway.'],['Frozen','Trainable','Teach memory what future actions need.','Hold policy slow parameters fixed. Action supervision passes through the action expert to shape memory extraction, retrieval and earlier fast-weight writes.'],['Trainable','Frozen','Teach the policy to use its memory.','Hold memory slow parameters fixed. Adapt the policy to the historical context it receives, while episode-local fast weights keep updating from observations.']];
-function phase(n){const d=phaseData[n];$('#policy-state').textContent=d[0];$('#memory-state').textContent=d[1];$('#phase-title').textContent=d[2];$('#phase-copy').textContent=d[3];$$('[data-phase]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.phase===n)));}$$('[data-phase]').forEach(b=>b.addEventListener('click',()=>phase(+b.dataset.phase)));phase(1);
+let trainingPhase=0, trainingPlaying=false, trainingFrame=0, trainingStart=0;
+function phase(n){
+ trainingPhase=n;const d=phaseData[n];
+ $('#policy-state').textContent=d[0];$('#memory-state').textContent=d[1];
+ $('#phase-title').textContent=d[2];$('#phase-copy').textContent=d[3];
+ $$('[data-phase]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.phase===n)));
+ $('.training').dataset.phase=String(n);
+ $('#training-phase-label').textContent=['Stage 1 · Policy adaptation','Stage 2A · Memory learning','Stage 2B · Policy learning'][n];
+ $('#gradient-caption').textContent=n===1?'Action gradients pass through the fixed policy to train memory':'Action supervision trains policy slow parameters';
+ $('#training-gradient-path').setAttribute('d',n===1?'M500 30 V10 H100 V30':'M500 30 V10 H300 V30');
+ $('#training-memory').classList.toggle('is-learning',n===1);
+ $('#training-policy').classList.toggle('is-learning',n!==1);
+ $('#training-memory').classList.toggle('is-inactive',n===0);
+ $('#training-episode').classList.toggle('is-updating',n!==0);
+ $('#episode-label').textContent=n===0?'Fast memory inactive':'Fast weights keep updating within each episode';
+}
+function trainingTick(t){
+ if(!trainingPlaying)return;
+ if(!trainingStart)trainingStart=t;
+ const progress=(t-trainingStart)/4500;
+ $('#training-progress').style.width=Math.min(progress,1)*100+'%';
+ if(progress>=1){phase(trainingPhase===2?1:trainingPhase+1);trainingStart=t;}
+ trainingFrame=requestAnimationFrame(trainingTick);
+}
+function playTraining(value){
+ trainingPlaying=value;cancelAnimationFrame(trainingFrame);trainingStart=0;
+ $('.training').classList.toggle('is-playing',value);
+ $('#training-play').textContent=value?'Ⅱ Pause':'▶ Play';
+ $('#training-play').setAttribute('aria-pressed',String(value));
+ if(value)trainingFrame=requestAnimationFrame(trainingTick);
+}
+$$('[data-phase]').forEach(b=>b.addEventListener('click',()=>{playTraining(false);phase(+b.dataset.phase);$('#training-progress').style.width='0%';}));
+$('#training-play').addEventListener('click',()=>playTraining(!trainingPlaying));
+$('#training-next').addEventListener('click',()=>{playTraining(false);phase(trainingPhase===2?1:trainingPhase+1);$('#training-progress').style.width='0%';});
+$('#training-reset').addEventListener('click',()=>{playTraining(false);phase(0);$('#training-progress').style.width='0%';});
+phase(0);
+let trainingAutoStarted=false;
+const trainingObserver=new IntersectionObserver(entries=>{
+ for(const entry of entries){
+  if(entry.isIntersecting&&!trainingAutoStarted){trainingAutoStarted=true;if(!matchMedia('(prefers-reduced-motion: reduce)').matches)playTraining(true);}
+  else if(!entry.isIntersecting&&trainingPlaying)playTraining(false);
+ }
+},{threshold:.35});
+trainingObserver.observe($('.training'));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)playTraining(false);});
 const tasks=['BinFill','PickXtimes','SwingXtimes','StopCube','VideoUnmask','ButtonUnmask','VideoUnmaskSwap','ButtonUnmaskSwap','PickHighL','VideoRepick','VideoPlcBtn','VideoPlcOrd','MoveCube','InsertPeg','PatternLock','RouteStick'];
 const categories=['Counting','Permanence','Reference','Imitation'];
 const methods=[{name:'T2MEM',avg:56.83,scores:[60.67,91.33,90.67,70,88,59.33,29.33,20,50.67,38.67,35.33,30,80.67,36,50,78.67]}, {name:'FrameSamp + Modul',avg:44.51,scores:[39.56,87.33,92,42,32.67,25.11,24.44,18.22,22.89,30.44,60,32,77.78,7.56,53.56,66.67]}, {name:'MemER',avg:42.38,scores:[56.67,79.33,59.33,0,81.33,72,38,21.33,70.67,25.33,30,26,82.67,6.67,16.67,12]}, {name:'π₀.₅ · no memory',avg:17.93,scores:[30,42.89,35.56,6.67,20.44,22.22,18.67,6.67,11.33,.44,31.11,25.78,26,1.56,2.89,4.67]}];
