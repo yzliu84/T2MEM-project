@@ -134,16 +134,46 @@ const tttRouteDefs={q:'M160 186 H420 L460 174',k:'M160 186 H185 V130 H420 L460 1
 const tttRoutes={};Object.entries(tttRouteDefs).forEach(([name,d])=>{const path=tttElement('path',{d,fill:'none',stroke:'#596384','stroke-width':1.5},$('#ttt-routes'));tttRoutes[name]={path,length:path.getTotalLength(),tiles:Array.from({length:8},()=>tttElement('rect',{width:11,height:11,rx:2,opacity:0},$('#ttt-particles')))}});
 tttEdges.forEach(edge=>edge.tile=tttElement('rect',{width:6,height:6,rx:1,opacity:0},$('#ttt-particles')));
 let tttMode='read',tttPlaying=!matchMedia('(prefers-reduced-motion: reduce)').matches,tttTime=0,tttLast=0,tttFrame=0;
-function tttPackets(name,start,end,color){const route=tttRoutes[name];const q=(tttTime-start)/(end-start);route.tiles.forEach((el,i)=>{const t=q*1.35-i*.045;const visible=t>=0&&t<=1;el.setAttribute('opacity',visible?1:0);if(!visible)return;const pt=route.path.getPointAtLength(t*route.length);if(name==='back'&&pt.x<=720){el.setAttribute('opacity',0);return}const beforeProjection=pt.x<258;el.setAttribute('fill',beforeProjection?'#91baff':color);el.setAttribute('x',pt.x-5.5);el.setAttribute('y',pt.y-5.5);el.setAttribute('transform',`rotate(${pt.x>220&&pt.x<310?(pt.x-220)*2:0} ${pt.x} ${pt.y})`);});}
+const tttClamp=x=>Math.max(0,Math.min(1,x));
+const tttEase=x=>{const u=tttClamp(x);return u*u*(3-2*u)};
+function tttCurve(a,b,c,d,t){const u=1-t;return {x:u*u*u*a.x+3*u*u*t*b.x+3*u*t*t*c.x+t*t*t*d.x,y:u*u*u*a.y+3*u*u*t*b.y+3*u*t*t*c.y+t*t*t*d.y}}
+function tttPackets(name,start,end,color){
+ const route=tttRoutes[name],q=(tttTime-start)/(end-start);
+ route.tiles.forEach((el,i)=>{
+  const t=(q-i*.052)/.636;
+  if(t<0||t>1){el.setAttribute('opacity',0);return}
+  const u=tttEase(t);let pt,size=9,alpha=tttEase(t/.12),angle=0;
+  if(name==='out'||name==='pred'){
+   const dest=name==='out'?{x:813+(i%4)*18,y:185+Math.floor(i/4)*22}:{x:815+(i%4)*13,y:183+Math.floor(i/4)*19};
+   pt=tttCurve({x:680,y:110+(i%4)*43},{x:742,y:110+(i%4)*43},{x:dest.x-35,y:dest.y},dest,u);
+   size=5+7*tttEase(t/.5);alpha*=name==='out'?1-tttEase((t-.86)/.14):1-tttEase((t-.75)/.25);
+  }else if(name==='back'){
+   pt=tttCurve({x:790,y:180+(i%4)*9},{x:758,y:180+(i%4)*9},{x:740,y:165+i*4},{x:720,y:165+i*4},u);
+   alpha*=1-tttEase((t-.5)/.5);size=9*(1-.65*tttEase(t));
+  }else{
+   pt=route.path.getPointAtLength(u*route.length);
+   if(name==='q'||name==='k'){
+    const blend=tttEase((u-.78)/.22);pt.y+=(110+(i%4)*43-174)*blend;
+    alpha*=1-tttEase((t-.82)/.18);size=9*(1-.7*tttEase((t-.72)/.28));
+   }else{alpha*=1-tttEase((t-.85)/.15)}
+   angle=180*tttEase((pt.x-215)/95);
+  }
+  const tint=tttEase((pt.x-225)/80),projected=['q','k','v'].includes(name);
+  const channel=(hex,j)=>parseInt(hex.slice(1+j*2,3+j*2),16);
+  const fill=projected?'rgb('+[0,1,2].map(j=>Math.round(channel('#91baff',j)*(1-tint)+channel(color,j)*tint)).join(',')+')':color;
+  el.setAttribute('opacity',alpha);el.setAttribute('fill',fill);
+  el.setAttribute('width',size);el.setAttribute('height',size);el.setAttribute('rx',Math.min(size/3,2.5));el.setAttribute('x',pt.x-size/2);el.setAttribute('y',pt.y-size/2);el.setAttribute('transform',`rotate(${angle} ${pt.x} ${pt.y})`);
+ });
+}
 function renderTTT(){
  const write=tttMode==='write',t=tttTime;$('.ttt-lab').dataset.mode=tttMode;
  Object.entries(tttRoutes).forEach(([name,r])=>{r.path.style.display=(write?['k','v','pred','back']:['q','out']).includes(name)?'':'none';r.tiles.forEach(el=>el.setAttribute('opacity',0))});
  tttPackets(write?'k':'q',0,.3,write?'#79d6ca':'#baa5ff');if(write)tttPackets('v',0,.58,'#f1cc79');
- tttPackets(write?'pred':'out',.57,.76,'#c1a3ff');if(write)tttPackets('back',.77,.99,'#f5a975');
+ tttPackets(write?'pred':'out',.57,.76,'#c1a3ff');if(write)tttPackets('back',.74,.85,'#f5a975');
  const forward=t>=.26&&t<.63,backward=write&&t>=.77,front=(t-.26)/.37*3,back=(t-.77)/.23*3;
  tttNodes.forEach(({l,j,el})=>{const active=forward&&Math.abs(front-l)<.8||backward&&Math.abs(2-back-l)<.85;el.setAttribute('fill',active?(backward?'#f5a975':'#bca6ff'):backward?'#58413a':'#29314a');el.setAttribute('r',active?12:10)});
- tttEdges.forEach(({l,j,k,el,tile})=>{const travel=backward?back-(1-l):front-l;const moving=forward&&travel>=0&&travel<=1;tile.setAttribute('opacity',moving?.85:0);if(moving){const u=backward?1-travel:travel;tile.setAttribute('x',460+l*110+110*u-3);tile.setAttribute('y',110+j*43+(k-j)*43*u-3);tile.setAttribute('fill',backward?'#f5a975':'#c1a3ff');}const active=forward&&front>=l&&front<l+1.2||backward&&2-back<=l+1&&2-back>l-.4;el.setAttribute('stroke',backward?'#f5a975':active?'#bca6ff':'#596384');el.setAttribute('opacity',active?.95:.28);el.setAttribute('stroke-width',backward?1+((j+k)%3)*.6:active?2:1)});
- $$('#ttt-context-grid rect').forEach((el,i)=>el.setAttribute('opacity',!write&&t>.67?.45+(i%3)*.23:.08));
+ tttEdges.forEach(({l,j,k,el,tile})=>{const travel=backward?back-(1-l):front-l;const moving=forward&&travel>=0&&travel<=1;tile.setAttribute('opacity',moving?.8*tttEase(travel/.15)*(1-tttEase((travel-.8)/.2)):0);if(moving){const u=backward?1-travel:travel;tile.setAttribute('x',460+l*110+110*u-3);tile.setAttribute('y',110+j*43+(k-j)*43*u-3);tile.setAttribute('fill',backward?'#f5a975':'#c1a3ff');}const active=forward&&front>=l&&front<l+1.2||backward&&2-back<=l+1&&2-back>l-.4;el.setAttribute('stroke',backward?'#f5a975':active?'#bca6ff':'#596384');el.setAttribute('opacity',active?.95:.28);el.setAttribute('stroke-width',backward?1+((j+k)%3)*.6:active?2:1)});
+ $$('#ttt-context-grid rect').forEach((el,i)=>{const arrival=.57+.19*(i*.052+.636);const blend=tttEase((t-arrival+.022)/.044);el.setAttribute('opacity',!write?.08+blend*(.37+(i%3)*.23):.08)});
  $('#ttt-stage').textContent=t<.27?(write?'1 · Project Uₜ → Kₜ and Vₜ':'1 · Project Uₜ → Qₜ'):t<.64?'2 · Forward through fast weights':!write?'3 · Retrieve memory context Rₜ':t<.77?'3 · Compare prediction with Vₜ':'4 · Backpropagate → update W';
  $('#ttt-network-state').textContent=backward?'Backward pass · Wₜ → Wₜ₊₁':'Forward pass · '+(write?'predict from Kₜ':'Wₜ unchanged');
  $('#ttt-progress').style.width=t*100+'%';
