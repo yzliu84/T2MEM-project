@@ -13,6 +13,6 @@
   "max_aligned_action_difference": 2.0,
   "source": "same_prompt_color_permutation_pilot_20260727/VideoUnmask/pair_000",
   "video_type": "expert demonstrations, not T\u00b2Mem policy rollouts",
-  "display": "Front camera cropped from original recordings; all frames retained.",
+  "display": "Front and wrist camera regions cropped from original recordings and placed side by side; all frames retained.",
   "decoded_anchor_mean_absolute_pixel_difference": 0.8043270898369753
 }
