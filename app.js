@@ -125,19 +125,32 @@ if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.querySelectorAll(".storyboard video").forEach(video => { video.autoplay = false; video.pause(); });
 }
 
-const tttWeights=$('#ttt-weights');
-for(let i=0;i<36;i++){const tile=document.createElement('i');tile.style.setProperty('--tile-opacity',.25+((i*7)%17)/23);tile.style.setProperty('--tile-delay',(i%6)*.09+'s');tttWeights.appendChild(tile)}
-function showTTT(mode){
- const write=mode==='write';$('.ttt-demo').dataset.mode=mode;
- $('.ttt-feedback span').textContent=write?'↔':'→';
- $$('[data-ttt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ttt===mode)));
- $('#ttt-status').textContent=write?'Learn an association · update fast weights':'Use memory · keep weights unchanged';
- $('#ttt-input').textContent=write?'Key k + value v':'Query q';
- $('#ttt-input-note').textContent=write?'Two views of the observation':'What is relevant now?';
- $('#ttt-output').textContent=write?'Prediction error':'Retrieved context';
- $('#ttt-output-note').textContent=write?'Compare fW(k) with v':'History for the next action';
- $('#ttt-weight-label').textContent=write?'Wₜ → Wₜ₊₁':'Wₜ stays fixed during a read';
- $('#ttt-copy').textContent=write?'Predict v from k, then use the error to update W. This stores the association for future reads.':'Pass a query through the memory network. Its current weights return information learned from earlier observations.';
- $('#ttt-equation').innerHTML=write?'L = ½ ‖f<sub>W</sub>(k) − v‖²<br>Wₜ₊₁ = Wₜ − η<sub>eff</sub> ∇<sub>W</sub>L':'Read: rₜ = f<sub>Wₜ</sub>(qₜ)';
+const tttNS='http://www.w3.org/2000/svg';
+function tttElement(tag,attrs,parent){const el=document.createElementNS(tttNS,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));parent.appendChild(el);return el}
+for(let i=0;i<8;i++){tttElement('rect',{x:48+(i%4)*22,y:177+Math.floor(i/4)*23,width:15,height:15,rx:2,fill:'#91baff',opacity:.45+(i%3)*.23},$('#ttt-interface-grid'));tttElement('rect',{x:807+(i%4)*18,y:179+Math.floor(i/4)*22,width:12,height:12,rx:2,fill:i%2?'#c1a3ff':'#91baff',opacity:0},$('#ttt-context-grid'))}
+const tttNodes=[],tttEdges=[];
+for(let l=0;l<3;l++){for(let j=0;j<4;j++){const x=460+l*110,y=110+j*43;tttNodes.push({l,j,el:tttElement('circle',{cx:x,cy:y,r:10,fill:'#29314a',stroke:'#737ea4','stroke-width':1.5},$('#ttt-neurons'))});if(l<2)for(let k=0;k<4;k++)tttEdges.push({l,j,k,el:tttElement('path',{d:`M${x} ${y} L${x+110} ${110+k*43}`,stroke:'#596384','stroke-width':1,opacity:.35},$('#ttt-network-edges'))})}}
+const tttRouteDefs={q:'M160 186 H420 L460 174',k:'M160 186 H185 V130 H420 L460 174',v:'M160 210 H185 V315 H840 V243',out:'M680 174 H785',pred:'M680 174 H778',back:'M778 205 H700 L680 196 L570 196 L460 196'};
+const tttRoutes={};Object.entries(tttRouteDefs).forEach(([name,d])=>{const path=tttElement('path',{d,fill:'none',stroke:'#596384','stroke-width':1.5},$('#ttt-routes'));tttRoutes[name]={path,length:path.getTotalLength(),tiles:Array.from({length:8},()=>tttElement('rect',{width:11,height:11,rx:2,opacity:0},$('#ttt-particles')))}});
+tttEdges.forEach(edge=>edge.tile=tttElement('rect',{width:6,height:6,rx:1,opacity:0},$('#ttt-particles')));
+let tttMode='read',tttPlaying=!matchMedia('(prefers-reduced-motion: reduce)').matches,tttTime=0,tttLast=0,tttFrame=0;
+function tttPackets(name,start,end,color){const route=tttRoutes[name];const q=(tttTime-start)/(end-start);route.tiles.forEach((el,i)=>{const t=q*1.35-i*.045;const visible=t>=0&&t<=1;el.setAttribute('opacity',visible?1:0);if(!visible)return;const pt=route.path.getPointAtLength(t*route.length);const beforeProjection=pt.x<258;el.setAttribute('fill',beforeProjection?'#91baff':color);el.setAttribute('x',pt.x-5.5);el.setAttribute('y',pt.y-5.5);el.setAttribute('transform',`rotate(${pt.x>220&&pt.x<310?(pt.x-220)*2:0} ${pt.x} ${pt.y})`);});}
+function renderTTT(){
+ const write=tttMode==='write',t=tttTime;$('.ttt-lab').dataset.mode=tttMode;
+ Object.entries(tttRoutes).forEach(([name,r])=>{r.path.style.display=(write?['k','v','pred','back']:['q','out']).includes(name)?'':'none';r.tiles.forEach(el=>el.setAttribute('opacity',0))});
+ tttPackets(write?'k':'q',0,.3,write?'#79d6ca':'#baa5ff');if(write)tttPackets('v',0,.58,'#f1cc79');
+ tttPackets(write?'pred':'out',.57,.76,'#c1a3ff');if(write)tttPackets('back',.77,.99,'#f5a975');
+ const forward=t>=.26&&t<.63,backward=write&&t>=.77,front=(t-.26)/.37*3,back=(t-.77)/.23*3;
+ tttNodes.forEach(({l,j,el})=>{const active=forward&&Math.abs(front-l)<.8||backward&&Math.abs(2-back-l)<.85;el.setAttribute('fill',active?(backward?'#f5a975':'#bca6ff'):backward?'#58413a':'#29314a');el.setAttribute('r',active?12:10)});
+ tttEdges.forEach(({l,j,k,el,tile})=>{const travel=backward?back-(1-l):front-l;const moving=(forward||backward)&&travel>=0&&travel<=1;tile.setAttribute('opacity',moving?.85:0);if(moving){const u=backward?1-travel:travel;tile.setAttribute('x',460+l*110+110*u-3);tile.setAttribute('y',110+j*43+(k-j)*43*u-3);tile.setAttribute('fill',backward?'#f5a975':'#c1a3ff');}const active=forward&&front>=l&&front<l+1.2||backward&&2-back<=l+1&&2-back>l-.4;el.setAttribute('stroke',backward?'#f5a975':active?'#bca6ff':'#596384');el.setAttribute('opacity',active?.95:.28);el.setAttribute('stroke-width',backward?1+((j+k)%3)*.6:active?2:1)});
+ $$('#ttt-context-grid rect').forEach((el,i)=>el.setAttribute('opacity',!write&&t>.67?.45+(i%3)*.23:.08));
+ $('#ttt-stage').textContent=t<.27?(write?'1 · Project Uₜ → Kₜ and Vₜ':'1 · Project Uₜ → Qₜ'):t<.64?'2 · Forward through fast weights':!write?'3 · Retrieve memory context Rₜ':t<.77?'3 · Compare prediction with Vₜ':'4 · Backpropagate → update W';
+ $('#ttt-network-state').textContent=backward?'Backward pass · Wₜ → Wₜ₊₁':'Forward pass · '+(write?'predict from Kₜ':'Wₜ unchanged');
+ $('#ttt-progress').style.width=t*100+'%';
 }
-$$('[data-ttt]').forEach(b=>b.addEventListener('click',()=>showTTT(b.dataset.ttt)));
+function tttTick(now){if(!tttPlaying)return;if(tttLast)tttTime+=(now-tttLast)/8500;tttLast=now;if(tttTime>1.12)tttTime=0;renderTTT();tttFrame=requestAnimationFrame(tttTick)}
+function playTTT(value){tttPlaying=value;tttLast=0;cancelAnimationFrame(tttFrame);$('#ttt-play').textContent=value?'Ⅱ Pause':'▶ Play';$('#ttt-play').setAttribute('aria-pressed',String(value));if(value)tttFrame=requestAnimationFrame(tttTick)}
+function showTTT(mode){tttMode=mode;tttTime=0;tttLast=0;$$('[data-ttt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ttt===mode)));$('#ttt-rule').textContent=mode==='read'?'Rₜ = fWₜ(Uₜ θQ)':'L = mean[(fWₜ(Kₜ) − Vₜ)²]';$('#ttt-rule-note').textContent=mode==='read'?'Read: retrieve history without changing W.':'Wₜ₊₁ = Wₜ − ηeff ∇W L';renderTTT();playTTT(!matchMedia('(prefers-reduced-motion: reduce)').matches)}
+$$('[data-ttt]').forEach(b=>b.addEventListener('click',()=>showTTT(b.dataset.ttt)));$('#ttt-play').addEventListener('click',()=>playTTT(!tttPlaying));$('#ttt-replay').addEventListener('click',()=>showTTT(tttMode));
+new IntersectionObserver(entries=>{for(const e of entries){if(!e.isIntersecting)playTTT(false);else if(!matchMedia('(prefers-reduced-motion: reduce)').matches)playTTT(true)}},{threshold:.25}).observe($('.ttt-lab'));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)playTTT(false)});renderTTT();playTTT(tttPlaying);
