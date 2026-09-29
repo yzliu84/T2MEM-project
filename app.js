@@ -124,3 +124,20 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)setPlaying(
 if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.querySelectorAll(".storyboard video").forEach(video => { video.autoplay = false; video.pause(); });
 }
+
+const tttWeights=$('#ttt-weights');
+for(let i=0;i<36;i++){const tile=document.createElement('i');tile.style.setProperty('--tile-opacity',.25+((i*7)%17)/23);tile.style.setProperty('--tile-delay',(i%6)*.09+'s');tttWeights.appendChild(tile)}
+function showTTT(mode){
+ const write=mode==='write';$('.ttt-demo').dataset.mode=mode;
+ $('.ttt-feedback span').textContent=write?'↔':'→';
+ $$('[data-ttt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ttt===mode)));
+ $('#ttt-status').textContent=write?'Learn an association · update fast weights':'Use memory · keep weights unchanged';
+ $('#ttt-input').textContent=write?'Key k + value v':'Query q';
+ $('#ttt-input-note').textContent=write?'Two views of the observation':'What is relevant now?';
+ $('#ttt-output').textContent=write?'Prediction error':'Retrieved context';
+ $('#ttt-output-note').textContent=write?'Compare fW(k) with v':'History for the next action';
+ $('#ttt-weight-label').textContent=write?'Wₜ → Wₜ₊₁':'Wₜ stays fixed during a read';
+ $('#ttt-copy').textContent=write?'Predict v from k, then use the error to update W. This stores the association for future reads.':'Pass a query through the memory network. Its current weights return information learned from earlier observations.';
+ $('#ttt-equation').innerHTML=write?'L = ½ ‖f<sub>W</sub>(k) − v‖²<br>Wₜ₊₁ = Wₜ − η<sub>eff</sub> ∇<sub>W</sub>L':'Read: rₜ = f<sub>Wₜ</sub>(qₜ)';
+}
+$$('[data-ttt]').forEach(b=>b.addEventListener('click',()=>showTTT(b.dataset.ttt)));
