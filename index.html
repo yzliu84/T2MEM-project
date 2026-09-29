@@ -49,16 +49,16 @@
 <div class="ttt-controls"><div class="memory-options" role="group" aria-label="TTT operation"><button data-ttt="read" aria-pressed="true">Read</button><button data-ttt="write" aria-pressed="false">Write</button></div><span id="ttt-stage">Project the interface → Qₜ</span><div><button id="ttt-play" aria-pressed="true">Ⅱ Pause</button><button id="ttt-replay" aria-label="Replay TTT animation">↺</button></div></div>
 <div class="ttt-timeline"><span id="ttt-progress"></span></div>
 <div class="ttt-canvas"><svg id="ttt-network-svg" viewBox="0 0 920 360" role="img" aria-labelledby="ttt-svg-title"><title id="ttt-svg-title">Interface projections, fast-weight forward pass, and self-supervised backward update</title>
-<g id="ttt-routes"></g><g class="ttt-surface"><rect x="20" y="125" width="140" height="122" rx="10"/><rect x="420" y="75" width="300" height="200" rx="14"/></g>
+<g id="ttt-routes"></g><g class="ttt-surface"><rect x="20" y="125" width="140" height="122" rx="10"/><rect x="420" y="86" width="300" height="200" rx="14"/></g>
 <text x="90" y="150" class="ttt-svg-heading">Interface Uₜ</text><text x="90" y="265" class="ttt-svg-small">VL features acquired</text><g id="ttt-interface-grid"></g>
 <text x="570" y="49" class="ttt-svg-heading">Fast weights · f<tspan baseline-shift="sub" font-size="11">Wₜ</tspan></text><text x="570" y="297" id="ttt-network-state" class="ttt-svg-small">Forward pass · Wₜ unchanged</text>
 <g id="ttt-network-edges"></g><g id="ttt-neurons"></g>
-<g class="ttt-read-only"><rect class="ttt-projection" x="225" y="155" width="65" height="60" rx="8"/><text x="258" y="192" class="ttt-theta">θQ</text><text x="350" y="158" class="ttt-svg-heading">Qₜ</text><rect class="ttt-context-box" x="785" y="132" width="115" height="108" rx="10"/><text x="842" y="158" class="ttt-svg-heading">Rₜ</text><text x="842" y="261" class="ttt-svg-small">Memory context</text><g id="ttt-context-grid"></g></g>
+<g class="ttt-read-only"><rect class="ttt-projection" x="225" y="156" width="65" height="60" rx="8"/><text x="258" y="192" class="ttt-theta">θQ</text><text x="350" y="158" class="ttt-svg-heading">Qₜ</text><rect class="ttt-context-box" x="785" y="132" width="115" height="108" rx="10"/><text x="842" y="158" class="ttt-svg-heading">Rₜ</text><text x="842" y="261" class="ttt-svg-small">Memory context</text><g id="ttt-context-grid"></g></g>
 <g class="ttt-write-only"><rect class="ttt-projection" x="225" y="100" width="65" height="60" rx="8"/><text x="258" y="138" class="ttt-theta">θK</text><text x="350" y="110" class="ttt-svg-heading">Kₜ</text><rect class="ttt-projection ttt-value-projection" x="225" y="285" width="65" height="60" rx="8"/><text x="258" y="323" class="ttt-theta">θV</text><text x="350" y="304" class="ttt-svg-heading">Vₜ · target</text><rect class="ttt-loss-box" x="778" y="135" width="125" height="108" rx="10"/><text x="840" y="161" class="ttt-svg-heading">Compare</text><text x="840" y="190" class="ttt-svg-small">fW(Kₜ) − Vₜ</text><text x="840" y="220" id="ttt-error-label" class="ttt-svg-small">Prediction error</text></g>
 <g id="ttt-particles"></g>
 </svg></div>
 <div class="ttt-bottom"><span id="ttt-rule">Rₜ = fWₜ(Uₜ θQ)</span><span id="ttt-rule-note">Read: retrieve history without changing W.</span></div>
-<p class="ttt-caption">Schematic network and feature colors. Read before write; only fast weights update during inference.</p>
+<p class="ttt-caption">Schematic network and feature colors. Read → Write → Repeat · Only fast weights update during inference.</p>
 </div></section>
 <section class="wrap section" id="learning">
 <div class="section-heading"><div><span class="eyebrow">02 / LEARNING</span><h2>Alternating Memory–Policy Learning</h2></div><p>Learn what to remember. Then learn how to use it.</p></div>
