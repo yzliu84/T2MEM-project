@@ -195,3 +195,17 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)playTTT(fal
 
 selectTTTMode(tttMode);
 showMath('.loss-symbol',sub('ℒ','<mtext>action</mtext>'));
+
+const pairedVideos = [document.querySelector('#vu-consistent'), document.querySelector('#vu-counterfactual')];
+const pairedPlay = document.querySelector('#play-counterfactual');
+function pausePairedVideos(){pairedVideos.forEach(v=>v.pause());pairedPlay.textContent='▶ Play both';}
+async function playPairedVideos(reset=false){
+ if(reset || pairedVideos[0].ended) pairedVideos.forEach(v=>v.currentTime=0);
+ try {await Promise.all(pairedVideos.map(v=>v.play()));pairedPlay.textContent='Ⅱ Pause both';}
+ catch(error){pausePairedVideos();pairedPlay.textContent='▶ Retry playback';}
+}
+pairedPlay.addEventListener('click',()=>pairedVideos[0].paused?playPairedVideos():pausePairedVideos());
+document.querySelector('#replay-counterfactual').addEventListener('click',()=>playPairedVideos(true));
+pairedVideos[0].addEventListener('timeupdate',()=>{if(!pairedVideos[0].paused && Math.abs(pairedVideos[1].currentTime-pairedVideos[0].currentTime)>.15)pairedVideos[1].currentTime=pairedVideos[0].currentTime;});
+pairedVideos[0].addEventListener('ended',pausePairedVideos);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pausePairedVideos();});

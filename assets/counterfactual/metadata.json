@@ -1,0 +1,20 @@
+{
+  "current_observation_sha256": "72a2764c0f5d45240689948b1e5ee890568e5282ce746764a32e87dc6cb99581",
+  "decision_index": 0,
+  "effect_cosine": 0.9736208919386161,
+  "expert_action_l2_difference": 28.17869410685592,
+  "model_action_l2_difference": 32.82134276932477,
+  "pair_id": 158,
+  "selection_rule": "largest_model_action_l2_difference_among_effect_cosine_gt_0.5",
+  "videos": {
+    "consistent": {
+      "path": "representative_pair/consistent_history_same_observation.mp4",
+      "sha256": "93bf59fc9f60ca0776c8dc1988cf27b4c21eb73b26fae76c235a24921fead28f"
+    },
+    "counterfactual": {
+      "path": "representative_pair/counterfactual_history_same_observation.mp4",
+      "sha256": "26c187fd95b58dcf800ed41954adfb5f826a4f47abf21e3b1798b5dee3903802"
+    }
+  },
+  "visualization_contract": "memory-history frames plus identical current observation and normalized model-predicted H64 action curves; not a simulator rollout"
+}
