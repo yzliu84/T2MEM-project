@@ -33,7 +33,7 @@
 <svg id="flow-lines" aria-hidden="true"></svg>
 <div class="flow-toolbar"><span><i class="flow-dot"></i> <span id="flow-phase">Observation → interface</span></span><div><button id="play-flow" aria-pressed="false">▶ Play flow</button><button id="reset-flow" aria-label="Reset data flow">↺</button></div></div><div class="flow-timer"><span id="flow-progress"></span></div>
 <div class="flow-top"><span class="node" id="node-observe">Observation + instruction</span><span class="flow-arrow">↓</span><span class="node" id="node-vlm">Vision-language backbone</span></div>
-<div class="branch-label">Current scene features</div>
+<div class="branch-label"><span>Current scene features</span></div>
 <div class="memory-row"><div class="node" id="node-interface"><span class="node-kicker">OBSERVATION-GROUNDED</span>Memory interface<div class="tokens" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="bidirectional"><span>read ←</span><span>write →</span></div><div class="node weight-node" id="node-memory"><span class="node-kicker">EPISODE STATE</span>Fast weights <i>W</i><div id="weight-grid" class="weight-grid" aria-hidden="true"></div></div></div>
 <div class="node update-node" id="node-update"><span class="node-kicker">SELF-SUPERVISED WRITE</span><span id="gradient-state">L = mean[(fW(K) − V)²]</span></div><div class="flow-top"><span class="flow-arrow">↓</span><span class="node" id="node-action">Action expert</span><span class="flow-arrow">↓</span><span class="action-output">History-conditioned action</span></div>
 <p class="schematic-note">Schematic animation; cell colors illustrate weight updates, not measured values. Blue: perception / retrieval. Orange: self-supervised writes.</p>
