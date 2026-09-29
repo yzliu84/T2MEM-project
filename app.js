@@ -2,10 +2,10 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const steps = [
- {label:'01 / OBSERVE',title:'Extract what the scene tells us.',copy:'Learned interface queries gather vision-language features into a compact observation summary. This summary supplies the keys, values and queries used by memory.',eq:'Uₜ = Attention(Eₜ, Zₜ)',note:'The memory interface cannot directly attend to action or proprioception tokens.',nodes:['observe','vlm','interface'],paths:['observe','extract'],mode:'observe'},
- {label:'02 / READ',title:'Retrieve before writing.',copy:'An observation-conditioned query reads the incoming fast weights. The readout carries information from earlier observations into the current decision.',eq:'Qₜ = Uₜ θq  ·  Rₜ = fWₜ(Qₜ)',note:'The current observation has not yet been committed to memory.',nodes:['interface','memory'],paths:['query','read'],mode:'read'},
- {label:'03 / ACT',title:'Combine now with before.',copy:'A learned gate combines retrieved history with the current observation summary. The action expert attends to this enriched context alongside current scene features.',eq:'Ũₜ = Uₜ + tanh(α) ⊙ Rₜ',note:'The direct vision-language pathway remains available to the action expert.',nodes:['interface','action'],paths:['fuse','direct','act'],mode:'act'},
- {label:'04 / WRITE',title:'Turn the observation into memory.',copy:'The fast network predicts V from K. A self-supervised reconstruction gradient updates its weights, scaled by a calibrated step η and adaptive factor β.',eq:'Wₜ₊₁ = Wₜ − wₜ ηₜ βₜ ∇W Lmem',note:'Read-before-write: this update affects subsequent predictions. β ∈ [0.1, 1]; w is the binary write mask.',nodes:['interface','memory','update'],paths:['write','gradient'],mode:'write'}
+ {label:'01 / OBSERVE',title:'Observe the scene.',copy:'Extract a compact summary of the current observation.',eq:'Uₜ = Attention(Eₜ, Zₜ)',note:'The memory interface cannot directly attend to action or proprioception tokens.',nodes:['observe','vlm','interface'],paths:['observe','extract'],mode:'observe'},
+ {label:'02 / READ',title:'Retrieve before writing.',copy:'Retrieve relevant history from fast weights.',eq:'Qₜ = Uₜ θq  ·  Rₜ = fWₜ(Qₜ)',note:'The current observation has not yet been committed to memory.',nodes:['interface','memory'],paths:['query','read'],mode:'read'},
+ {label:'03 / ACT',title:'Combine now with before.',copy:'Combine remembered history with the current scene to choose an action.',eq:'Ũₜ = Uₜ + tanh(α) ⊙ Rₜ',note:'The direct vision-language pathway remains available to the action expert.',nodes:['interface','action'],paths:['fuse','direct','act'],mode:'act'},
+ {label:'04 / WRITE',title:'Update the memory.',copy:'A self-supervised update stores the observation for future actions.',eq:'Wₜ₊₁ = Wₜ − wₜ ηₜ βₜ ∇W Lmem',note:'Read-before-write: this update affects subsequent predictions. β ∈ [0.1, 1]; w is the binary write mask.',nodes:['interface','memory','update'],paths:['write','gradient'],mode:'write'}
 ];
 const grid=$('#weight-grid'); for(let i=0;i<25;i++){const cell=document.createElement('i');cell.style.opacity=.18+((i*7+3)%13)/17;grid.appendChild(cell)}
 let currentStep=0,playing=false,cycle=0,updates=0,phaseStart=0,frame;
@@ -13,7 +13,7 @@ function setStep(n){if(n===3&&currentStep!==3)updates++;currentStep=n;const s=st
 function tick(t){if(!playing)return;if(!phaseStart)phaseStart=t;const elapsed=t-phaseStart;$('#flow-progress').style.width=Math.min(elapsed/2600,1)*100+'%';if(elapsed>=2600){phaseStart=t;if(currentStep===3)cycle++;setStep((currentStep+1)%4)}frame=requestAnimationFrame(tick)}
 function setPlaying(value){playing=value;$('#play-flow').textContent=playing?'Ⅱ Pause':'▶ Play flow';$('#play-flow').setAttribute('aria-pressed',String(playing));$('.flow').classList.toggle('playing',playing);cancelAnimationFrame(frame);phaseStart=0;if(playing)frame=requestAnimationFrame(tick)}
 $$('[data-step]').forEach(b=>b.addEventListener('click',()=>{setPlaying(false);setStep(+b.dataset.step)}));$('#next-step').addEventListener('click',()=>{setPlaying(false);if(currentStep===3)cycle++;setStep((currentStep+1)%4)});$('#play-flow').addEventListener('click',()=>setPlaying(!playing));$('#reset-flow').addEventListener('click',()=>{setPlaying(false);cycle=0;updates=0;setStep(0);$('#flow-progress').style.width='0%'});
-const phaseData=[['Trainable','Not present','Establish task-specific action skills.','Adapt the pretrained policy without memory. This supplies a capable visuomotor starting point before learning the memory pathway.'],['Frozen','Trainable','Teach memory what future actions need.','Hold policy slow parameters fixed. Action supervision passes through the action expert to shape memory extraction, retrieval and earlier fast-weight writes.'],['Trainable','Frozen','Teach the policy to use its memory.','Hold memory slow parameters fixed. Adapt the policy to the historical context it receives, while episode-local fast weights keep updating from observations.']];
+const phaseData=[['Trainable','Not present','Learn the task.','Train the policy without memory.'],['Frozen','Trainable','Learn what to remember.','Freeze the policy; action supervision trains memory.'],['Trainable','Frozen','Learn how to use memory.','Freeze memory’s slow parameters; train the policy to use history.']];
 let trainingPhase=0, trainingPlaying=false, trainingFrame=0, trainingStart=0;
 function phase(n){
  trainingPhase=n;const d=phaseData[n];
@@ -29,9 +29,9 @@ function phase(n){
  $('#training-memory').classList.toggle('is-absent',n===0);
  $('#training-memory > span').textContent=n===0?'No memory':'Memory';
  $('#training-memory > small').textContent=n===0?'Introduced in Stage 2':'Slow parameters';
- $('.training-key').textContent=n===0?'Blue: policy learning · No memory module or fast weights':'Blue: slow-parameter learning · Orange: episode-local fast-weight updates';
+ $('.training-key').textContent=n===0?'Blue: policy learning':'Blue: parameter learning · Orange: online memory updates';
  $('#training-episode').classList.toggle('is-updating',n!==0);
- $('#episode-label').textContent=n===0?'No memory reads, writes or fast-weight updates':'Fast weights keep updating within each episode';
+ $('#episode-label').textContent=n===0?'No memory reads, writes or fast-weight updates':'Fast weights update within each episode';
 }
 function trainingTick(t){
  if(!trainingPlaying)return;
