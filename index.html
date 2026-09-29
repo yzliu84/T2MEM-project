@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>T²Mem — Learning Test-Time Memory for Robotics</title>
 <meta name="description" content="Explore T²Mem: observation-grounded fast-weight memory, alternating memory–policy learning, and results on memory-dependent robot manipulation.">
-<meta name="theme-color" content="#0c0d12">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><script src="app.js" defer></script>
 </head>
 <body>
@@ -66,7 +66,7 @@
 <div class="training-progress"><span id="training-progress"></span></div>
 <div class="training-diagram" aria-label="Alternating optimization of slow parameters">
 <div class="gradient-caption" id="gradient-caption">Action supervision updates the policy</div>
-<svg class="training-gradient" viewBox="0 0 600 36" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="training-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10" fill="#91a8fa"/></marker></defs><path id="training-gradient-path" d="M500 30 V10 H300 V30" marker-end="url(#training-arrow)"/></svg>
+<svg class="training-gradient" viewBox="0 0 600 36" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="training-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10" fill="#577bbc"/></marker></defs><path id="training-gradient-path" d="M500 30 V10 H300 V30" marker-end="url(#training-arrow)"/></svg>
 <div class="training-models"><div class="training-model" id="training-memory"><span>Memory</span><small>Slow parameters</small><div class="parameter-cells" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="memory-absent-symbol" aria-hidden="true">∅</div><strong id="memory-state"></strong></div><div class="training-model" id="training-policy"><span>Policy</span><small>Slow parameters</small><div class="parameter-cells" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><strong id="policy-state"></strong></div><div class="training-model supervision"><span>Action loss</span><small>Expert demonstrations</small><div class="loss-symbol" aria-hidden="true">ℒ<sub>action</sub></div><strong>Supervision</strong></div></div>
 <div class="episode-lane" id="training-episode"><div><span class="episode-dot"></span><span id="episode-label">Memory inactive</span></div><div class="episode-cells" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 <p class="training-key">Blue: slow-parameter learning · Orange: episode-local fast-weight updates</p>
