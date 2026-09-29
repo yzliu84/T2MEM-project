@@ -1,6 +1,22 @@
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+const mi=x=>`<mi>${x}</mi>`, mo=x=>`<mo>${x}</mo>`, sub=(x,y)=>`<msub>${mi(x)}<mrow>${y}</mrow></msub>`, sym=(x,t='t')=>sub(x,mi(t));
+const wt=sym('W'), wn=sub('W',mi('t')+mo('+')+'<mn>1</mn>'), loss=sub('ℒ','<mtext>mem</mtext>');
+const fun=x=>`<msub><mi>f</mi>${x}</msub>`, par=x=>`<mrow><mo>(</mo>${x}<mo>)</mo></mrow>`, eff=sub('η','<mtext>eff</mtext>'), grad=sub('∇',mi('W'));
+const error=fun(wt)+par(sym('K'))+mo('−')+sym('V');
+const meanSquare='<mi mathvariant="normal">mean</mi><mo>[</mo><msup>'+par(error)+'<mn>2</mn></msup><mo>]</mo>';
+const mathMarkup=x=>`<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>${x}</mrow></math>`;
+const formulas={
+ observe:sym('U')+mo('=')+'<mi mathvariant="normal">Attention</mi>'+par(sym('E')+mo(',')+sym('Z')),
+ read:sym('Q')+mo('=')+sym('U')+sub('θ',mi('q'))+'<mspace width="1.5em"/>'+sym('R')+mo('=')+fun(wt)+par(sym('Q')),
+ act:'<msub><mover><mi>U</mi><mo>~</mo></mover><mi>t</mi></msub>'+mo('=')+sym('U')+mo('+')+'<mi mathvariant="normal">tanh</mi>'+par(mi('α'))+mo('⊙')+sym('R'),
+ write:wn+mo('=')+wt+mo('−')+sym('w')+sym('η')+sym('β')+grad+loss,
+ loss:loss+mo('=')+meanSquare,
+ update:wn+mo('=')+wt+mo('−')+eff+grad+loss,
+ retrieve:sym('R')+mo('=')+fun(wt)+par(sym('U')+sub('θ',mi('q')))
+};
+function showMath(selector,formula){$(selector).innerHTML=mathMarkup(formula)}
 const steps = [
  {label:'01 / OBSERVE',title:'Observe the scene.',copy:'Extract a compact summary of the current observation.',eq:'Uₜ = Attention(Eₜ, Zₜ)',note:'The memory interface cannot directly attend to action or proprioception tokens.',nodes:['observe','vlm','interface'],paths:['observe','extract'],mode:'observe'},
  {label:'02 / READ',title:'Retrieve before writing.',copy:'Retrieve relevant history from fast weights.',eq:'Qₜ = Uₜ θq  ·  Rₜ = fWₜ(Qₜ)',note:'The current observation has not yet been committed to memory.',nodes:['interface','memory'],paths:['query','read'],mode:'read'},
@@ -26,7 +42,7 @@ function renderFeatures(p){
  const routeWindows=currentStep===0?{observe:[0,.25],extract:[.2,.9]}:currentStep===1?{query:[0,.45],read:[.45,.95]}:currentStep===2?{fuse:[0,.75],direct:[0,.75],act:[.75,1]}:{write:[0,.48],gradient:[.48,1]};
  Object.entries(flowPaths).forEach(([name,route])=>{const win=routeWindows[name];route.packets.forEach((tile,j)=>{const q=win?(p-win[0])/(win[1]-win[0]): -1;const t=q*1.4-j*.07;if(t<0||t>1){tile.style.opacity=0;return}const point=route.path.getPointAtLength(t*route.length);tile.setAttribute('x',point.x-4);tile.setAttribute('y',point.y-4);tile.style.opacity=.95;});});
 }
-function setStep(n){currentStep=n;flowProgress=0;const s=steps[n];$('#step-label').textContent=s.label;$('#step-title').textContent=s.title;$('#step-copy').textContent=s.copy;$('#step-equation').textContent=s.eq;$('#step-note').textContent=s.note;$$('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===n)));$$('.node').forEach(el=>el.classList.toggle('active',s.nodes.some(k=>el.id==='node-'+k)));$('.flow').dataset.mode=s.mode;$$('[data-path]').forEach(el=>el.classList.toggle('on',s.paths.includes(el.dataset.path)));$('#flow-phase').textContent=['Gather observation → interface','Send query → retrieve history','Fused features → action expert','Observation → self-supervised write'][n];$('#gradient-state').textContent=n===3?'βη∇L → Wₜ₊₁':'L = mean[(fW(K) − V)²]';renderFeatures(playing?0:.8);}
+function setStep(n){currentStep=n;flowProgress=0;const s=steps[n];$('#step-label').textContent=s.label;$('#step-title').textContent=s.title;$('#step-copy').textContent=s.copy;showMath('#step-equation',formulas[s.mode]);$('#step-note').textContent=s.note;$$('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===n)));$$('.node').forEach(el=>el.classList.toggle('active',s.nodes.some(k=>el.id==='node-'+k)));$('.flow').dataset.mode=s.mode;$$('[data-path]').forEach(el=>el.classList.toggle('on',s.paths.includes(el.dataset.path)));$('#flow-phase').textContent=['Gather observation → interface','Send query → retrieve history','Fused features → action expert','Observation → self-supervised write'][n];showMath('#gradient-state',n===3?eff+grad+loss+mo('→')+wn:formulas.loss);renderFeatures(playing?0:.8);}
 function tick(t){if(!playing)return;if(!phaseStart)phaseStart=t-flowProgress*phaseDuration;flowProgress=Math.min((t-phaseStart)/phaseDuration,1);$('#flow-progress').style.width=flowProgress*100+'%';renderFeatures(flowProgress);if(flowProgress>=1){if(currentStep===3){cycle++;updates++;}setStep((currentStep+1)%4);phaseStart=t;}frame=requestAnimationFrame(tick)}
 function setPlaying(value){playing=value;$('#play-flow').textContent=value?'Ⅱ Pause':'▶ Play flow';$('#play-flow').setAttribute('aria-pressed',String(value));$('.flow').classList.toggle('playing',value);cancelAnimationFrame(frame);phaseStart=0;if(value)frame=requestAnimationFrame(tick)}
 $$('[data-step]').forEach(b=>b.addEventListener('click',()=>{setPlaying(false);setStep(+b.dataset.step)}));$('#next-step').addEventListener('click',()=>{setPlaying(false);if(currentStep===3){cycle++;updates++;}setStep((currentStep+1)%4)});$('#play-flow').addEventListener('click',()=>setPlaying(!playing));$('#reset-flow').addEventListener('click',()=>{setPlaying(false);cycle=0;updates=0;setStep(0);$('#flow-progress').style.width='0%'});
@@ -180,8 +196,11 @@ function renderTTT(){
 }
 function tttTick(now){if(!tttPlaying)return;if(tttLast)tttTime+=(now-tttLast)/8500;tttLast=now;if(tttTime>1.12){selectTTTMode(tttMode==='read'?'write':'read');tttTime=0;}renderTTT();tttFrame=requestAnimationFrame(tttTick)}
 function playTTT(value){tttPlaying=value;tttLast=0;cancelAnimationFrame(tttFrame);$('#ttt-play').textContent=value?'Ⅱ Pause':'▶ Play';$('#ttt-play').setAttribute('aria-pressed',String(value));if(value)tttFrame=requestAnimationFrame(tttTick)}
-function selectTTTMode(mode){tttMode=mode;$$('[data-ttt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ttt===mode)));$('#ttt-rule').textContent=mode==='read'?'Rₜ = fWₜ(Uₜ θQ)':'L = mean[(fWₜ(Kₜ) − Vₜ)²]';$('#ttt-rule-note').textContent=mode==='read'?'Read: retrieve history without changing W.':'Wₜ₊₁ = Wₜ − ηeff ∇W L';}
+function selectTTTMode(mode){tttMode=mode;$$('[data-ttt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ttt===mode)));showMath('#ttt-rule',mode==='read'?formulas.retrieve:formulas.loss);if(mode==='read')$('#ttt-rule-note').textContent='Read: retrieve history without changing W.';else showMath('#ttt-rule-note',formulas.update);}
 function showTTT(mode){selectTTTMode(mode);tttTime=0;tttLast=0;renderTTT();playTTT(!matchMedia('(prefers-reduced-motion: reduce)').matches)}
 $$('[data-ttt]').forEach(b=>b.addEventListener('click',()=>showTTT(b.dataset.ttt)));$('#ttt-play').addEventListener('click',()=>playTTT(!tttPlaying));$('#ttt-replay').addEventListener('click',()=>showTTT(tttMode));
 new IntersectionObserver(entries=>{for(const e of entries){if(!e.isIntersecting)playTTT(false);else if(!matchMedia('(prefers-reduced-motion: reduce)').matches)playTTT(true)}},{threshold:.25}).observe($('.ttt-lab'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)playTTT(false)});renderTTT();playTTT(tttPlaying);
+
+selectTTTMode(tttMode);
+showMath('.loss-symbol',sub('ℒ','<mtext>action</mtext>'));
