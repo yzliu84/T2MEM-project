@@ -1,0 +1,18 @@
+{
+  "task": "VideoUnmask",
+  "seed_A": 910000,
+  "seed_B": 910000,
+  "prompt": "watch the video carefully, then pick up the container hiding the blue cube",
+  "bins_exact_same": true,
+  "color_labels_same": true,
+  "physical_color_positions_swapped": true,
+  "expert_targets_differ": true,
+  "actions_A": 174,
+  "actions_B": 177,
+  "first_action_difference": 73,
+  "max_aligned_action_difference": 2.0,
+  "source": "same_prompt_color_permutation_pilot_20260727/VideoUnmask/pair_000",
+  "video_type": "expert demonstrations, not T\u00b2Mem policy rollouts",
+  "display": "Front camera cropped from original recordings; all frames retained.",
+  "decoded_anchor_mean_absolute_pixel_difference": 0.8043270898369753
+}

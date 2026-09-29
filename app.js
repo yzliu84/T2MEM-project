@@ -207,5 +207,5 @@ async function playPairedVideos(reset=false){
 pairedPlay.addEventListener('click',()=>pairedVideos[0].paused?playPairedVideos():pausePairedVideos());
 document.querySelector('#replay-counterfactual').addEventListener('click',()=>playPairedVideos(true));
 pairedVideos[0].addEventListener('timeupdate',()=>{if(!pairedVideos[0].paused && Math.abs(pairedVideos[1].currentTime-pairedVideos[0].currentTime)>.15)pairedVideos[1].currentTime=pairedVideos[0].currentTime;});
-pairedVideos[0].addEventListener('ended',pausePairedVideos);
+pairedVideos.forEach(v=>v.addEventListener('ended',()=>{if(pairedVideos.every(x=>x.ended))pausePairedVideos();}));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pausePairedVideos();});
