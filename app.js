@@ -95,15 +95,6 @@ const trainingObserver=new IntersectionObserver(entries=>{
 },{threshold:.35});
 trainingObserver.observe($('.training'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)playTraining(false);});
-const tasks=['BinFill','PickXtimes','SwingXtimes','StopCube','VideoUnmask','ButtonUnmask','VideoUnmaskSwap','ButtonUnmaskSwap','PickHighL','VideoRepick','VideoPlcBtn','VideoPlcOrd','MoveCube','InsertPeg','PatternLock','RouteStick'];
-const categories=['Counting','Permanence','Reference','Imitation'];
-const methods=[{name:'T²Mem',avg:56.83,scores:[60.67,91.33,90.67,70,88,59.33,29.33,20,50.67,38.67,35.33,30,80.67,36,50,78.67]}, {name:'FrameSamp + Modul',avg:44.51,scores:[39.56,87.33,92,42,32.67,25.11,24.44,18.22,22.89,30.44,60,32,77.78,7.56,53.56,66.67]}, {name:'MemER',avg:42.38,scores:[56.67,79.33,59.33,0,81.33,72,38,21.33,70.67,25.33,30,26,82.67,6.67,16.67,12]}, {name:'π₀.₅ · no memory',avg:17.93,scores:[30,42.89,35.56,6.67,20.44,22.22,18.67,6.67,11.33,.44,31.11,25.78,26,1.56,2.89,4.67]}];
-let category='All';
-function indices(){return tasks.map((_,i)=>i).filter(i=>category==='All'||categories[Math.floor(i/4)]===category)}
-function renderResults(){const idx=indices();const task=$('#task-select').value;$('#chart-title').textContent=task==='average'?(category==='All'?'All tasks':category)+' · mean success':tasks[+task]+' · success';$('#result-bars').innerHTML=methods.map((m,i)=>{const value=task!=='average'?m.scores[+task]:category==='All'?m.avg:idx.reduce((s,j)=>s+m.scores[j],0)/idx.length;return `<div class="result-row ${i===0?'ours':''}"><span class="result-name">${m.name}</span><div class="result-track"><div class="result-fill" style="width:${value}%"></div></div><span class="result-value">${value.toFixed(2)}</span></div>`}).join('');}
-function changeCategory(c){category=c;$$('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===c)));$('#task-select').innerHTML='<option value="average">'+(c==='All'?'All-task average':'Category average')+'</option>'+indices().map(i=>`<option value="${i}">${tasks[i]}</option>`).join('');renderResults()}
-$$('[data-category]').forEach(b=>b.addEventListener('click',()=>changeCategory(b.dataset.category)));$('#task-select').addEventListener('change',renderResults);changeCategory('All');
-$('#task-table').innerHTML=tasks.map((task,i)=>`<tr><th scope="row">${task}</th>${[3,2,1,0].map(m=>`<td>${methods[m].scores[i].toFixed(2)}</td>`).join('')}</tr>`).join('');
 const memories=[{score:100,count:300,title:'The right history guides the action.',copy:'Matching memory restores the hidden cue.'},{score:100/300,count:1,title:'The wrong history misleads the policy.',copy:'Wrong history is worse than no history.'},{score:101/3,count:101,title:'An empty memory leaves the cue missing.',copy:'Near the one-third chance level.'}];
 const memoryStories=[
  ['Same episode','The demonstration identifies target A.','Matching history','A','Fast weights formed from that demonstration.','Correct: use memory built from this episode’s own demonstration.'],

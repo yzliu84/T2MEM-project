@@ -75,11 +75,13 @@
 <figure class="paper-figure"><a href="assets/ablations.png" target="_blank" rel="noopener" aria-label="Open full-size figure: Ablation studies"><img src="assets/ablations.png" width="2400" height="663" loading="lazy" alt="Paper ablation figure: memory architecture, alternating learning, and adaptive memory writing."></a><figcaption>Ablation studies</figcaption></figure>
 </section>
 <section class="results-section" id="results"><div class="wrap section">
-<div class="section-heading"><div><span class="eyebrow">03 / RESULTS</span><h2>Results on RoboMME</h2></div><p>16 tasks. Four types of memory.</p></div>
-<div class="results-controls"><div class="filters" role="group" aria-label="Result category"><button data-category="All" aria-pressed="true">All tasks</button><button data-category="Counting" aria-pressed="false">Counting</button><button data-category="Permanence" aria-pressed="false">Permanence</button><button data-category="Reference" aria-pressed="false">Reference</button><button data-category="Imitation" aria-pressed="false">Imitation</button></div><label class="task-select">Compare <select id="task-select"><option value="average">Category average</option></select></label></div>
-<div class="result-chart"><div class="chart-top"><h3 id="chart-title">All tasks · mean success</h3><span>SUCCESS RATE (%)</span></div><div id="result-bars" aria-live="polite"></div><div class="axis"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div>
-<details class="compact-details"><summary>Evaluation protocol &amp; sources</summary><p class="figure-note">Main evaluation: 50 test episodes per task × 3 evaluation seeds. Baseline scores are quoted from the <a href="https://arxiv.org/abs/2603.04639" target="_blank" rel="noopener">RoboMME paper</a>. Selected non-privileged comparisons are shown; category means are calculated from the reported task scores.</p></details>
-<details class="data-detail"><summary>View all 16 task scores <span>+</span></summary><div class="table-scroll"><table><caption>Success rate (%), selected methods from the main results table</caption><thead><tr><th scope="col">Task</th><th scope="col">π<sub>0.5</sub></th><th scope="col">MemER</th><th scope="col">FrameSamp + Modul</th><th scope="col">T²Mem</th></tr></thead><tbody id="task-table"></tbody></table></div></details>
+<div class="section-heading"><div><span class="eyebrow">03 / RESULTS</span><h2>Results on RoboMME</h2></div></div>
+<figure class="paper-figure main-results-figure">
+<a href="assets/main-results.png" target="_blank" rel="noopener" aria-label="Open full-size main results table from the paper">
+<img src="assets/main-results.png" width="3318" height="2709" loading="lazy" alt="Table 1 from the paper: full success rates on all 16 RoboMME tasks, including human performance, symbolic, perceptual and recurrent memory baselines, and T²Mem. T²Mem achieves 56.83% average success.">
+</a>
+<figcaption>Click to enlarge.</figcaption>
+</figure>
 </div></section>
 <section class="wrap section" id="evidence"><div class="section-heading"><div><span class="eyebrow">04 / INSIDE THE MEMORY</span><h2>Does the Policy Use Its Memory?</h2></div><p>Same scene. Different histories. Different choices.</p></div>
 <div class="memory-explainer" id="memory-explainer" data-condition="0">
