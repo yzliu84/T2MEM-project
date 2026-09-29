@@ -1,6 +1,6 @@
-# T2MEM project website
+# T²Mem project website
 
-Interactive presentation of **T2MEM: Learning Test-Time Memory for Robotics**.
+Interactive presentation of **T²Mem: Learning Test-Time Memory for Robotics**.
 
 The site explains observation-grounded memory, fast-weight read/write updates,
 alternating training, and selected results from the paper.
@@ -31,5 +31,5 @@ from Google Fonts, with system-font fallbacks.
 
 The three task demonstration videos are embedded from the RoboMME project site
 (VideoUnmask, PickXtimes, and PatternLock, whose source asset is DrawPattern.mp4).
-They illustrate the benchmark tasks and are not T2MEM policy evaluation rollouts.
+They illustrate the benchmark tasks and are not T²Mem policy evaluation rollouts.
 Playback requires network access to robomme.github.io.
