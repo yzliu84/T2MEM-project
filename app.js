@@ -95,26 +95,6 @@ const trainingObserver=new IntersectionObserver(entries=>{
 },{threshold:.35});
 trainingObserver.observe($('.training'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)playTraining(false);});
-const memories=[{score:100,count:300,title:'The right history guides the action.',copy:'Matching memory restores the hidden cue.'},{score:100/300,count:1,title:'The wrong history misleads the policy.',copy:'Wrong history is worse than no history.'},{score:101/3,count:101,title:'An empty memory leaves the cue missing.',copy:'Near the one-third chance level.'}];
-const memoryStories=[
- ['Same episode','The demonstration identifies target A.','Matching history','A','Fast weights formed from that demonstration.','Correct: use memory built from this episode’s own demonstration.'],
- ['Conflicting episode','The donor demonstration identifies target B.','Conflicting history','B','Replace the memory with the donor’s fast weights.','Conflicting: give the policy memory from a different episode with a conflicting target. The target episode still requires A.'],
- ['No demonstration','Skip demonstration-based memory formation.','Initial memory W₀','W₀','Keep the learned initialization; no demonstration history.','Empty: use the learned initial memory W₀ without a demonstration. The weights are not all zero.']
-];
-const memoryChoices=[
- ['Remember A → choose A','The remembered cue agrees with the true target.','✓ Correct target'],
- ['Remember B → misled toward B','The donor cue points away from the true target A.','× Misled by history'],
- ['No cue → guess','Each draw selects A, B or C. This illustrates guessing, not measured policy probabilities.','? Random choice']
-];
-let emptyChoiceTimer, lastEmptyChoice=-1;
-function drawEmptyChoice(){
- if(document.hidden)return;
- const choice=lastEmptyChoice<0?Math.floor(Math.random()*3):(lastEmptyChoice+1+Math.floor(Math.random()*2))%3;
- lastEmptyChoice=choice;
- $$('.choice-target').forEach((el,i)=>el.classList.toggle('is-guessed',i===choice));
- $('#choice-result').textContent=(choice===0?'✓ A · correct by chance':'× '+['A','B','C'][choice]+' · wrong target');
-}
-function memory(n){clearInterval(emptyChoiceTimer);lastEmptyChoice=-1;$$('.choice-target').forEach(el=>el.classList.remove('is-guessed'));const m=memories[n],story=memoryStories[n];['choice-title',null,'choice-result'].forEach((id,i)=>{if(id)$('#'+id).textContent=memoryChoices[n][i]});$('#memory-explainer').dataset.condition=String(n);['source-title',null,'stored-title','stored-cue',null,'memory-definition'].forEach((id,i)=>{if(id)$('#'+id).textContent=story[i]});$('#memory-score').textContent=m.score===100?'100':m.score.toFixed(2);$('#memory-count').textContent=m.count+' / 300 successful trials';$('#memory-bar').style.width=m.score+'%';$('#memory-title').textContent=m.title;$('#memory-copy').textContent=m.copy;$$('[data-memory]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.memory===n)));if(n===2){drawEmptyChoice();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)emptyChoiceTimer=setInterval(drawEmptyChoice,600);}}$$('[data-memory]').forEach(b=>b.addEventListener('click',()=>memory(+b.dataset.memory)));memory(0);
 function drawPaths(){
  const svg=$('#flow-lines'),r=$('.flow').getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${r.width} ${r.height}`);
  const box=id=>{const b=$(id).getBoundingClientRect();return {x:b.x-r.x,y:b.y-r.y,w:b.width,h:b.height}};
