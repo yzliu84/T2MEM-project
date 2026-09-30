@@ -68,3 +68,5 @@ body{background:#fff;color:var(--ink)}.explorer,.ttt-lab,.memory-explainer,.resu
 .authors a{color:var(--blue);text-decoration:none;text-underline-offset:4px}.authors a:hover,.authors a:focus-visible{color:var(--blue);text-decoration:underline}
 
 .citation-section{padding-top:60px;padding-bottom:60px}.citation-section h2{text-align:center;margin-bottom:26px}.citation-section pre{margin:0;padding:24px;background:#f5f7fb;border:1px solid var(--line);border-radius:8px;overflow-x:auto;text-align:left}.citation-section code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.8;color:#344761}@media(max-width:640px){.citation-section pre{padding:16px}.citation-section code{font-size:11px}}
+
+.hero h1{font-size:54px}.publication-title{font-size:36px;max-width:900px}.authors{font-size:17px}.authors>span,.contact-email{font-size:16px}@media(max-width:640px){.hero h1{font-size:42px}.publication-title{font-size:28px}.authors{font-size:16px}.authors>span,.contact-email{font-size:14px}}
